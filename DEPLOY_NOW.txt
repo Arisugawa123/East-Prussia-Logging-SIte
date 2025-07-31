@@ -1,0 +1,41 @@
+========================================
+DEPLOY YOUR WEBSITE TO VERCEL NOW!
+========================================
+
+I've already fixed your package.json with stable versions:
+✓ React 18.2.0 (instead of React 19)
+✓ Vite 5.2.0 (instead of Vite 7)
+✓ Node.js 18.x specified
+
+MANUAL STEPS TO DEPLOY:
+
+1. Open Command Prompt or Git Bash
+2. Navigate to your project folder
+3. Run these commands:
+
+   del package-lock.json
+   git add .
+   git commit -m "Fix: Use stable React 18 and Vite 5"
+   git push origin main
+
+4. Go to https://vercel.com
+5. Your project will auto-deploy with the fixed versions!
+
+========================================
+ALTERNATIVE - DIRECT VERCEL DEPLOY:
+========================================
+
+If Git is still giving issues:
+
+1. Go to https://vercel.com
+2. Click "New Project"
+3. Import from GitHub: East-Prussia-Logging-SIte
+4. Vercel will use the updated package.json I created
+5. Click "Deploy"
+
+The stable versions should work perfectly now!
+
+========================================
+YOUR WEBSITE WILL BE LIVE AT:
+https://east-prussia-logging-site.vercel.app
+========================================
