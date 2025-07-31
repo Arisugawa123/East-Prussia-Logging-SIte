@@ -1,12 +1,101 @@
-# React + Vite
+# East Prussia Regiment - React Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React application built with Vite for the East Prussia Regiment website.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Modern React 19 with Vite
+- Tailwind CSS for styling
+- React Icons
+- Responsive design
+- Multiple components for personnel management
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+- Node.js (version 16 or higher)
+- npm or yarn
+
+### Installation
+```bash
+npm install
+```
+
+### Development Server
+```bash
+npm run dev
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Preview Production Build
+```bash
+npm run preview
+```
+
+## Deployment
+
+### Quick Deployment to Vercel
+
+1. **Run the setup script:**
+   ```bash
+   setup_git_and_deploy.bat
+   ```
+   This will:
+   - Initialize Git repository
+   - Add all files to Git
+   - Commit initial version
+   - Add GitHub remote
+   - Push to GitHub
+
+2. **Deploy to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Sign in with your GitHub account
+   - Click "New Project"
+   - Import the `EAST-PRUSSIA-REGIMENT` repository
+   - Vercel will auto-detect the Vite configuration
+   - Click "Deploy"
+
+### Manual Git Setup
+
+If you prefer manual setup:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/Arisugawa123/EAST-PRUSSIA-REGIMENT.git
+git branch -M main
+git push -u origin main
+```
+
+## Project Structure
+
+```
+src/
+├── App.jsx              # Main application component
+├── Dashboard.jsx        # Dashboard component
+├── HallOfHiCom.jsx     # Hall of High Command
+├── InactivityNotice.jsx # Inactivity notices
+├── LowRankLogging.jsx   # Low rank personnel logging
+├── NCOLogging.jsx       # NCO logging
+├── OfficerLogging.jsx   # Officer logging
+├── Personnels.jsx       # Personnel management
+├── RetiredPersonnel.jsx # Retired personnel
+└── assets/             # Static assets
+
+public/
+├── images/             # Public images
+└── modal.js           # Modal functionality
+```
+
+## Technologies Used
+
+- React 19
+- Vite
+- Tailwind CSS
+- React Icons
+- ESLint for code quality
