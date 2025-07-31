@@ -1,0 +1,43 @@
+========================================
+EMERGENCY DEBUG DEPLOYMENT
+========================================
+
+I've added a debug script that will show:
+✅ If HTML is loading
+✅ If React is trying to load
+✅ What errors are happening
+
+DEPLOY THIS DEBUG VERSION:
+
+In Command Prompt or Git Bash, run:
+
+git add .
+git commit -m "Add debug script to diagnose empty website issue"
+git push origin main
+
+========================================
+AFTER DEPLOYMENT:
+========================================
+
+1. Go to: https://east-prussia-logging-site.vercel.app
+2. Open browser console (F12 → Console tab)
+3. Look for debug messages and errors
+
+You should see either:
+- "🎖️ East Prussia Regiment - Loading Test" message
+- OR error messages in console
+
+This will tell us exactly what's broken!
+
+========================================
+POSSIBLE ISSUES WE'RE CHECKING:
+========================================
+
+1. HTML not loading at all
+2. React failing to initialize
+3. Module import errors
+4. Asset loading problems
+5. Build configuration issues
+
+RUN THE GIT COMMANDS AND CHECK THE CONSOLE!
+========================================
