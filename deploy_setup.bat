@@ -112,9 +112,15 @@ if errorlevel 1 (
     echo Note: No changes to commit or commit failed
 )
 
-echo Adding remote repository...
-git remote remove origin >nul 2>&1
-git remote add origin https://github.com/Arisugawa123/EAST-PRUSSIA-REGIMENT.git
+echo Checking remote repository...
+git remote get-url origin >nul 2>&1
+if errorlevel 1 (
+    echo Adding remote repository...
+    git remote add origin https://github.com/Arisugawa123/East-Prussia-Logging-SIte.git
+) else (
+    echo Remote origin already exists, updating URL...
+    git remote set-url origin https://github.com/Arisugawa123/East-Prussia-Logging-SIte.git
+)
 if errorlevel 1 (
     echo ERROR: Failed to add remote repository
     pause
@@ -144,7 +150,7 @@ echo Next steps:
 echo 1. Go to https://vercel.com
 echo 2. Sign in with your GitHub account
 echo 3. Click "New Project"
-echo 4. Import your repository: EAST-PRUSSIA-REGIMENT
+echo 4. Import your repository: East-Prussia-Logging-SIte
 echo 5. Vercel will automatically detect it's a Vite React app
 echo 6. Click "Deploy"
 echo.

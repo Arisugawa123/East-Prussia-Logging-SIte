@@ -55,7 +55,7 @@ npm run preview
    - Go to [vercel.com](https://vercel.com)
    - Sign in with your GitHub account
    - Click "New Project"
-   - Import the `EAST-PRUSSIA-REGIMENT` repository
+   - Import the `East-Prussia-Logging-SIte` repository
    - Vercel will auto-detect the Vite configuration
    - Click "Deploy"
 
@@ -67,7 +67,7 @@ If you prefer manual setup:
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/Arisugawa123/EAST-PRUSSIA-REGIMENT.git
+git remote add origin https://github.com/Arisugawa123/East-Prussia-Logging-SIte.git
 git branch -M main
 git push -u origin main
 ```
