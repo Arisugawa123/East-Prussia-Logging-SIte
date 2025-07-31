@@ -111,7 +111,7 @@ const RetiredPersonnel = () => {
           <div className="retired-header-brand">
             <div className="retired-logo-container">
               <div className="retired-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="retired-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="retired-brand-logo" />
               </div>
               <div className="retired-brand-text">
                 <span className="retired-brand-title">Prussia Retired Personnel</span>

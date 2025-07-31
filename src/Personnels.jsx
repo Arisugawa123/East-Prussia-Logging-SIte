@@ -316,7 +316,7 @@ const Personnels = () => {
           <div className="personnels-header-brand">
             <div className="personnels-logo-container">
               <div className="personnels-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="personnels-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="personnels-brand-logo" />
               </div>
               <div className="personnels-brand-text">
                 <span className="personnels-brand-title">Prussia Personnel Management</span>
@@ -377,7 +377,7 @@ const Personnels = () => {
               <div className="modal-header-brand">
                 <div className="modal-logo-container">
                   <div className="modal-logo-ring">
-                    <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="modal-brand-logo" />
+                    <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="modal-brand-logo" />
                   </div>
                   <div className="modal-brand-text">
                     <span className="modal-brand-title">Prussia Recruitment Portal</span>

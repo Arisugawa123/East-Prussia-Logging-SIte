@@ -8,7 +8,7 @@ function openLoginModal() {
             <div class="modal-content staff-login-modal">
                 <div class="modal-header">
                     <div class="modal-emblem">
-                        <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Flag" class="modal-logo" />
+                        <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Flag" class="modal-logo" />
                     </div>
                     <h2>Staff Access Portal</h2>
                     <p class="modal-subtitle">Ostpreußisches Landmilizbataillon Command</p>

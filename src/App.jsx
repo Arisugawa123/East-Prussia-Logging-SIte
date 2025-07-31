@@ -42,7 +42,7 @@ function App() {
           <div className="nav-brand">
             <div className="logo-container">
               <div className="logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="brand-logo" />
               </div>
               <div className="brand-text">
                 <span className="brand-title">East Prussian Regiment</span>
@@ -104,16 +104,16 @@ function App() {
         <div className="hero-background">
           <div className="hero-images">
             <div className="hero-image-item" style={{'--delay': '0s'}}>
-              <img src="/hero-image-1.png" alt="East Prussian Heritage 1" />
+              <img src="./hero-image-1.png" alt="East Prussian Heritage 1" />
             </div>
             <div className="hero-image-item" style={{'--delay': '0.5s'}}>
-              <img src="/hero-image-2.png" alt="East Prussian Heritage 2" />
+              <img src="./hero-image-2.png" alt="East Prussian Heritage 2" />
             </div>
             <div className="hero-image-item" style={{'--delay': '1s'}}>
-              <img src="/hero-image-3.png" alt="East Prussian Heritage 3" />
+              <img src="./hero-image-3.png" alt="East Prussian Heritage 3" />
             </div>
             <div className="hero-image-item" style={{'--delay': '1.5s'}}>
-              <img src="/hero-image-4.png" alt="East Prussian Heritage 4" />
+              <img src="./hero-image-4.png" alt="East Prussian Heritage 4" />
             </div>
           </div>
           <div className="hero-overlay"></div>
@@ -641,19 +641,19 @@ function App() {
         <div className="historical-background">
           <div className="historical-images">
             <div className="historical-image-item" style={{'--delay': '0s'}}>
-              <img src="/about-image-1.png" alt="East Prussian Military Heritage" />
+              <img src="./about-image-1.png" alt="East Prussian Military Heritage" />
               <div className="image-overlay"></div>
             </div>
             <div className="historical-image-item" style={{'--delay': '1s'}}>
-              <img src="/about-image-2.png" alt="18th Century Regiment" />
+              <img src="./about-image-2.png" alt="18th Century Regiment" />
               <div className="image-overlay"></div>
             </div>
             <div className="historical-image-item" style={{'--delay': '2s'}}>
-              <img src="/about-image-3.png" alt="Prussian Military Tradition" />
+              <img src="./about-image-3.png" alt="Prussian Military Tradition" />
               <div className="image-overlay"></div>
             </div>
             <div className="historical-image-item" style={{'--delay': '3s'}}>
-              <img src="/about-image-4.png" alt="East Prussian Legacy" />
+              <img src="./about-image-4.png" alt="East Prussian Legacy" />
               <div className="image-overlay"></div>
             </div>
           </div>
@@ -712,7 +712,7 @@ function App() {
               <div className="heritage-showcase">
                 <div className="heritage-image-card">
                   <div className="image-container">
-                    <img src="/about-image-1.png" alt="East Prussian Military Heritage" />
+                    <img src="./about-image-1.png" alt="East Prussian Military Heritage" />
                     <div className="image-frame"></div>
                     <div className="image-caption">
                       <h4>Regimental Tradition</h4>
@@ -740,7 +740,7 @@ function App() {
 
                 <div className="heritage-image-card reverse">
                   <div className="image-container">
-                    <img src="/about-image-2.png" alt="East Prussian Territory" />
+                    <img src="./about-image-2.png" alt="East Prussian Territory" />
                     <div className="image-frame"></div>
                     <div className="image-caption">
                       <h4>East Prussian Territory</h4>
@@ -776,7 +776,7 @@ function App() {
 
                 <div className="heritage-image-card">
                   <div className="image-container">
-                    <img src="/about-image-3.png" alt="Cultural Heritage" />
+                    <img src="./about-image-3.png" alt="Cultural Heritage" />
                     <div className="image-frame"></div>
                     <div className="image-caption">
                       <h4>Cultural Heritage</h4>
@@ -801,7 +801,7 @@ function App() {
 
                 <div className="heritage-image-card reverse">
                   <div className="image-container">
-                    <img src="/about-image-4.png" alt="Military Innovation" />
+                    <img src="./about-image-4.png" alt="Military Innovation" />
                     <div className="image-frame"></div>
                     <div className="image-caption">
                       <h4>Military Innovation</h4>
@@ -1412,7 +1412,7 @@ function App() {
             <div className="footer-main">
               <div className="footer-brand">
                 <div className="footer-logo">
-                  <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="footer-logo-img" />
+                  <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="footer-logo-img" />
                   <div className="footer-brand-text">
                     <h3>East Prussian Regiment</h3>
                     <p>Ostpreußisches Landmilizbataillon</p>
@@ -1494,7 +1494,7 @@ function App() {
               <div className="modal-header-brand">
                 <div className="modal-logo-container">
                   <div className="modal-logo-ring">
-                    <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="modal-brand-logo" />
+                    <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="modal-brand-logo" />
                   </div>
                   <div className="modal-brand-text">
                     <span className="modal-brand-title">Staff Access Portal</span>

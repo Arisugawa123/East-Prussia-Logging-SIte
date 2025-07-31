@@ -30,7 +30,7 @@ const Dashboard = ({ onClose }) => {
             <div className="dashboard-nav-brand">
               <div className="dashboard-logo-container">
                 <div className="dashboard-logo-ring">
-                  <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="dashboard-brand-logo" />
+                  <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="dashboard-brand-logo" />
                 </div>
                 <div className="dashboard-brand-text">
                   <span className="dashboard-brand-title">Staff Command Center</span>

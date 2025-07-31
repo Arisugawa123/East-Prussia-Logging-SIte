@@ -61,7 +61,7 @@ const HallOfHiCom = () => {
           <div className="hicom-header-brand">
             <div className="hicom-logo-container">
               <div className="hicom-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="hicom-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="hicom-brand-logo" />
               </div>
               <div className="hicom-brand-text">
                 <span className="hicom-brand-title">Prussia Hall of High Command</span>

@@ -128,7 +128,7 @@ const OfficerLogging = () => {
           <div className="officer-header-brand">
             <div className="officer-logo-container">
               <div className="officer-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="officer-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="officer-brand-logo" />
               </div>
               <div className="officer-brand-text">
                 <span className="officer-brand-title">Prussia Officer Management</span>

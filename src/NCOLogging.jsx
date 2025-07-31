@@ -129,7 +129,7 @@ const NCOLogging = () => {
           <div className="nco-header-brand">
             <div className="nco-logo-container">
               <div className="nco-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="nco-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="nco-brand-logo" />
               </div>
               <div className="nco-brand-text">
                 <span className="nco-brand-title">Prussia Non-Commission Officer Management</span>

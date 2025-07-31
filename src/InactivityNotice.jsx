@@ -116,7 +116,7 @@ const InactivityNotice = () => {
           <div className="inactivity-header-brand">
             <div className="inactivity-logo-container">
               <div className="inactivity-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="inactivity-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="inactivity-brand-logo" />
               </div>
               <div className="inactivity-brand-text">
                 <span className="inactivity-brand-title">Prussia Inactivity Notice</span>

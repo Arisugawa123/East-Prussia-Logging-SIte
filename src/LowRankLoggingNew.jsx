@@ -128,7 +128,7 @@ const LowRankLoggingNew = () => {
           <div className="lowrank-header-brand">
             <div className="lowrank-logo-container">
               <div className="lowrank-logo-ring">
-                <img src="/Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="lowrank-brand-logo" />
+                <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="lowrank-brand-logo" />
               </div>
               <div className="lowrank-brand-text">
                 <span className="lowrank-brand-title">Prussia Low Rank Management</span>
