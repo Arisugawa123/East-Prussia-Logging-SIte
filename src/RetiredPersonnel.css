@@ -1,0 +1,446 @@
+/* Retired Personnel Component Styles */
+.retired-logging {
+  padding: 2rem;
+  background: #ffffff;
+  min-height: 100vh;
+  font-family: 'Cinzel', serif;
+}
+
+/* Header Section */
+.retired-header {
+  position: relative;
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.95) 0%, 
+    rgba(20, 20, 20, 0.9) 50%, 
+    rgba(0, 0, 0, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  margin-bottom: 3rem;
+  padding: 2rem;
+  border-radius: 10px;
+}
+
+.retired-header-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+}
+
+.retired-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.retired-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.retired-logo-ring {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #b8860b);
+  padding: 3px;
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+  animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+.retired-brand-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+
+.retired-brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.retired-brand-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.retired-brand-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 215, 0, 0.9);
+  font-weight: 400;
+  letter-spacing: 1px;
+  font-style: italic;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Header Background Effects */
+.retired-header-bg-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.retired-header-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 215, 0, 0.6);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.retired-header-particle:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.retired-header-particle:nth-child(2) {
+  top: 60%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+.retired-header-particle:nth-child(3) {
+  bottom: 30%;
+  left: 80%;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+@keyframes logoGlow {
+  0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+  100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 25px rgba(255, 255, 255, 0.2); }
+}
+
+/* Table Container */
+.retired-table-container {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 3rem;
+}
+
+/* Table Styles */
+.retired-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+}
+
+.retired-table thead {
+  background: linear-gradient(135deg, #000000 0%, #2c2c2c 50%, #000000 100%);
+  color: #ffffff;
+}
+
+.retired-table th {
+  padding: 1.2rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 3px solid #ffd700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
+}
+
+.retired-table tbody tr {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.retired-table tbody tr:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.retired-table td {
+  padding: 0.8rem 1rem;
+  vertical-align: middle;
+}
+
+/* Cell-specific styles */
+.username-cell {
+  cursor: pointer;
+  font-weight: bold;
+  color: #333333;
+  font-family: 'Cinzel', serif;
+}
+
+.username-cell:hover {
+  background: #e9ecef;
+}
+
+.username-cell.editing {
+  background: #fff3cd;
+}
+
+.username-input {
+  width: 100%;
+  min-width: 150px;
+  padding: 0.3rem;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  font-weight: bold;
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Cinzel', serif;
+}
+
+.username-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.date-cell {
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  font-family: 'Cinzel', serif;
+}
+
+.date-cell:hover {
+  background: #e9ecef;
+}
+
+.date-cell.editing {
+  background: #fff3cd;
+}
+
+.date-input {
+  width: 140px;
+  padding: 0.3rem;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold;
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Cinzel', serif;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.reason-cell {
+  cursor: pointer;
+  font-weight: bold;
+  max-width: 400px;
+  word-wrap: break-word;
+  line-height: 1.4;
+  font-family: 'Cinzel', serif;
+}
+
+.reason-cell:hover {
+  background: #e9ecef;
+}
+
+.reason-cell.editing {
+  background: #fff3cd;
+}
+
+/* Auto-adjusting font sizes for reason text */
+.reason-text-normal {
+  font-size: 0.95rem;
+}
+
+.reason-text-medium {
+  font-size: 0.85rem;
+}
+
+.reason-text-small {
+  font-size: 0.75rem;
+}
+
+.reason-input {
+  width: 100%;
+  min-width: 300px;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  font-weight: bold;
+  background: #ffffff;
+  color: #000000;
+  resize: vertical;
+  font-family: 'Cinzel', serif;
+}
+
+.reason-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Instructions Section */
+.retired-instructions {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.retired-instructions::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ffd700, #b8860b);
+}
+
+.retired-instructions h3 {
+  font-family: 'Cinzel', serif;
+  color: #000000;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.instruction-header-icon {
+  font-size: 1.2rem;
+  color: #ffd700;
+}
+
+.retired-instructions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.retired-instructions li {
+  padding: 1rem 1.5rem;
+  color: #333333;
+  font-weight: 500;
+  background: #ffffff;
+  border-radius: 8px;
+  border-left: 4px solid #ffd700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.instruction-icon {
+  color: #ffd700;
+  font-size: 1rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.retired-instructions li:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-left-color: #b8860b;
+}
+
+.retired-instructions li:hover .instruction-icon {
+  color: #b8860b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .retired-logging {
+    padding: 1rem;
+  }
+  
+  .retired-header h2 {
+    font-size: 2rem;
+  }
+  
+  .retired-table-container {
+    overflow-x: auto;
+  }
+  
+  .retired-table {
+    min-width: 700px;
+    font-size: 0.85rem;
+  }
+  
+  .reason-cell {
+    max-width: 250px;
+  }
+  
+  .reason-input {
+    min-width: 200px;
+  }
+  
+  .username-input {
+    min-width: 120px;
+  }
+  
+  .date-input {
+    width: 120px;
+  }
+}
+
+@media (max-width: 576px) {
+  .retired-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .retired-header p {
+    font-size: 1rem;
+  }
+  
+  .retired-instructions {
+    padding: 1rem;
+  }
+}

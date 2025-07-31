@@ -1,0 +1,361 @@
+/* Low Rank Logging Component Styles */
+.low-rank-logging {
+  padding: 2rem;
+  background: #ffffff;
+  min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Header Section */
+.low-rank-header {
+  margin-bottom: 3rem;
+  text-align: center;
+  border-bottom: 3px solid #000000;
+  padding-bottom: 2rem;
+}
+
+.low-rank-header h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: #000000;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.low-rank-header p {
+  font-size: 1.2rem;
+  color: #666666;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Table Container */
+.training-table-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 2px solid #000000;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Table Styles */
+.training-progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+/* Table Header */
+.training-progress-table thead {
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
+  color: #ffffff;
+}
+
+.training-progress-table th {
+  padding: 1.2rem 1rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.training-progress-table th:last-child {
+  border-right: none;
+}
+
+.rank-header {
+  min-width: 120px;
+}
+
+.username-header {
+  min-width: 140px;
+}
+
+.training-header {
+  min-width: 100px;
+}
+
+.status-header {
+  min-width: 150px;
+}
+
+/* Table Body */
+.training-progress-table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.training-progress-table tbody tr:hover {
+  background: linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%);
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.training-progress-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.training-progress-table tbody tr:nth-child(even):hover {
+  background: linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 100%);
+}
+
+/* Table Cells */
+.training-progress-table td {
+  padding: 1rem;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.training-progress-table td:last-child {
+  border-right: none;
+}
+
+/* Rank Cell */
+.rank-cell {
+  font-weight: 700;
+  color: #000000;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Username Cell */
+.username-cell {
+  font-weight: 600;
+  color: #333333;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Training Score Cells */
+.training-score {
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin: 0.2rem;
+  display: inline-block;
+  min-width: 40px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-score:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Score Color Classes */
+.score-none {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: #ffffff;
+  border: 2px solid #495057;
+}
+
+.score-poor {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: #ffffff;
+  border: 2px solid #c82333;
+}
+
+.score-average {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #000000;
+  border: 2px solid #e0a800;
+}
+
+.score-good {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: #ffffff;
+  border: 2px solid #138496;
+}
+
+.score-excellent {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: #ffffff;
+  border: 2px solid #1e7e34;
+}
+
+/* Status Cell */
+.status-cell {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.6rem 1rem;
+  border-radius: 20px;
+  margin: 0.2rem;
+  display: inline-block;
+  min-width: 120px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.status-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Status Color Classes */
+.status-ncoa {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #ffffff;
+  border: 2px solid #0056b3;
+}
+
+.status-promotion {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: #ffffff;
+  border: 2px solid #1e7e34;
+}
+
+.status-inactive {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: #ffffff;
+  border: 2px solid #c82333;
+}
+
+.status-default {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: #ffffff;
+  border: 2px solid #495057;
+}
+
+/* Table Summary */
+.table-summary {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-color: #000000;
+}
+
+.stat-label {
+  font-weight: 600;
+  color: #333333;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  color: #000000;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #000000, #333333);
+  color: #ffffff;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .training-progress-table {
+    font-size: 0.8rem;
+  }
+  
+  .training-progress-table th,
+  .training-progress-table td {
+    padding: 0.8rem 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .low-rank-logging {
+    padding: 1rem;
+  }
+  
+  .low-rank-header h2 {
+    font-size: 2rem;
+  }
+  
+  .training-progress-table {
+    font-size: 0.75rem;
+  }
+  
+  .training-progress-table th,
+  .training-progress-table td {
+    padding: 0.6rem 0.4rem;
+  }
+  
+  .training-score {
+    font-size: 0.9rem;
+    padding: 0.3rem;
+    min-width: 30px;
+  }
+  
+  .status-cell {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    min-width: 100px;
+  }
+  
+  .summary-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .training-progress-table th,
+  .training-progress-table td {
+    padding: 0.4rem 0.2rem;
+  }
+  
+  .rank-header,
+  .username-header,
+  .training-header,
+  .status-header {
+    min-width: 80px;
+  }
+  
+  .training-score {
+    font-size: 0.8rem;
+    padding: 0.2rem;
+    min-width: 25px;
+  }
+  
+  .status-cell {
+    font-size: 0.6rem;
+    padding: 0.3rem 0.4rem;
+    min-width: 80px;
+  }
+}
