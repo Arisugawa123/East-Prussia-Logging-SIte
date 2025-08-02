@@ -54,23 +54,23 @@ function App() {
           {/* Navigation Links */}
           <div className={`nav-links ${isMenuOpen ? 'nav-active' : ''}`}>
             <div className="nav-items">
-              <a href="#home" className="nav-link-modern">
+              <a href="#home" className="nav-link-modern" onClick={() => setIsMenuOpen(false)}>
                 <span className="link-text">Home</span>
                 <div className="link-underline"></div>
               </a>
-              <a href="#ranks" className="nav-link-modern">
+              <a href="#ranks" className="nav-link-modern" onClick={() => setIsMenuOpen(false)}>
                 <span className="link-text">Ranks</span>
                 <div className="link-underline"></div>
               </a>
-              <a href="#about" className="nav-link-modern">
+              <a href="#about" className="nav-link-modern" onClick={() => setIsMenuOpen(false)}>
                 <span className="link-text">About</span>
                 <div className="link-underline"></div>
               </a>
-              <a href="#games" className="nav-link-modern">
+              <a href="#games" className="nav-link-modern" onClick={() => setIsMenuOpen(false)}>
                 <span className="link-text">Enlist</span>
                 <div className="link-underline"></div>
               </a>
-              <a href="#contact" className="nav-link-modern">
+              <a href="#contact" className="nav-link-modern" onClick={() => setIsMenuOpen(false)}>
                 <span className="link-text">Contact</span>
                 <div className="link-underline"></div>
               </a>
@@ -634,6 +634,7 @@ function App() {
           </div>
         </div>
       </section>
+
 
       {/* About Section - Ostpreußisches Landmilizbataillon */}
       <section id="about" className="about">

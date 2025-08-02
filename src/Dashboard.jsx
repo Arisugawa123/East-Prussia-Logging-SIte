@@ -7,6 +7,7 @@ import OfficerLogging from './OfficerLogging';
 import RetiredPersonnel from './RetiredPersonnel';
 import HallOfHiCom from './HallOfHiCom';
 import Personnels from './Personnels';
+import RankingInformation from './RankingInformation';
 
 const Dashboard = ({ onClose }) => {
   const [activeMenu, setActiveMenu] = useState('overview');
@@ -123,6 +124,12 @@ const Dashboard = ({ onClose }) => {
                     <button className={`modern-nav-item ${activeMenu === 'hall-of-hicom' ? 'active' : ''}`} onClick={() => handleMenuClick('hall-of-hicom')}>
                       <i className="fas fa-medal"></i>
                       <span>Hall of HiCom</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button className={`modern-nav-item ${activeMenu === 'ranking-information' ? 'active' : ''}`} onClick={() => handleMenuClick('ranking-information')}>
+                      <i className="fas fa-star"></i>
+                      <span>Ranking Information</span>
                     </button>
                   </li>
                 </ul>
@@ -256,6 +263,10 @@ const Dashboard = ({ onClose }) => {
               <h2>Officer Academy</h2>
               <p>Officer training and leadership development.</p>
             </div>
+          )}
+          
+          {activeMenu === 'ranking-information' && (
+            <RankingInformation />
           )}
           </main>
         </div>

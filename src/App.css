@@ -5,6 +5,25 @@
     box-sizing: border-box;
 }
 
+/* Hide all scrollbars */
+* {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+}
+
+html, body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none; /* WebKit browsers */
+}
+
 
 body {
     font-family: 'Open Sans', sans-serif;
@@ -200,6 +219,7 @@ h1, h2, h3 {
         0 4px 15px rgba(255, 215, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .staff-access-btn:hover {

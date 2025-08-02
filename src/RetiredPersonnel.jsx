@@ -3,68 +3,101 @@ import './RetiredPersonnel.css';
 import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar } from 'react-icons/fa';
 
 const RetiredPersonnel = () => {
-  const [personnelData, setPersonnelData] = useState([
-    {
-      id: 1,
-      username: "von_Bismarck_O",
-      date: "2023-12-15",
-      reason: "Honorable discharge after 25 years of distinguished service"
-    },
-    {
-      id: 2,
-      username: "Mueller_H",
-      date: "2023-11-20",
-      reason: "Medical retirement"
-    },
-    {
-      id: 3,
-      username: "Schmidt_K",
-      date: "2023-10-30",
-      reason: "Voluntary retirement to pursue civilian career opportunities"
-    },
-    {
-      id: 4,
-      username: "von_Weber_F",
-      date: "2023-09-18",
-      reason: "Age retirement after reaching mandatory retirement age"
-    },
-    {
-      id: 5,
-      username: "Fischer_M",
-      date: "2023-08-25",
-      reason: "Family obligations requiring relocation outside service area"
-    },
-    {
-      id: 6,
-      username: "Wagner_A",
-      date: "2023-07-12",
-      reason: "Disability retirement due to service-related injury sustained during training exercise"
-    },
-    {
-      id: 7,
-      username: "Becker_L",
-      date: "2023-06-08",
-      reason: "Early retirement package acceptance"
-    },
-    {
-      id: 8,
-      username: "von_Schulz_R",
-      date: "2023-05-14",
-      reason: "Transfer to reserve status upon completion of active duty commitment"
-    },
-    {
-      id: 9,
-      username: "Hoffmann_T",
-      date: "2023-04-22",
-      reason: "Medical discharge"
-    },
-    {
-      id: 10,
-      username: "von_Klein_J",
-      date: "2023-03-30",
-      reason: "Honorable discharge for exemplary service and leadership contributions to the regiment"
-    }
-  ]);
+  const [personnelData, setPersonnelData] = useState([]);
+
+  // Load retired personnel from localStorage on component mount
+  React.useEffect(() => {
+    const loadRetiredPersonnel = () => {
+      const storedRetired = JSON.parse(localStorage.getItem('retiredPersonnel') || '[]');
+      const defaultRetired = [
+        {
+          id: 1,
+          username: "von_Bismarck_O",
+          rank: "Oberst",
+          date: "2023-12-15",
+          reason: "Honorable discharge after 25 years of distinguished service",
+          processedBy: "General Staff Command",
+          originalCategory: "High Command",
+          enlistedBy: "High Command Appointment",
+          joinIn: "2020-01-10"
+        },
+        {
+          id: 2,
+          username: "Mueller_H",
+          rank: "Hauptmann",
+          date: "2023-11-20",
+          reason: "Medical retirement",
+          processedBy: "Medical Board",
+          originalCategory: "Officers",
+          enlistedBy: "Officer Academy Berlin",
+          joinIn: "2021-03-15"
+        },
+        {
+          id: 3,
+          username: "Schmidt_K",
+          rank: "Korporal",
+          date: "2023-10-30",
+          reason: "Voluntary retirement to pursue civilian career opportunities",
+          processedBy: "Personnel Office",
+          originalCategory: "NCOs",
+          enlistedBy: "NCO Academy Berlin",
+          joinIn: "2022-06-15"
+        },
+        {
+          id: 4,
+          username: "von_Weber_F",
+          rank: "Major",
+          date: "2023-09-18",
+          reason: "Age retirement after reaching mandatory retirement age",
+          processedBy: "Personnel Office",
+          originalCategory: "Officers",
+          enlistedBy: "General Staff Command",
+          joinIn: "2020-03-15"
+        },
+        {
+          id: 5,
+          username: "Fischer_M",
+          rank: "Gefreiter",
+          date: "2023-08-25",
+          reason: "Family obligations requiring relocation outside service area",
+          processedBy: "Company Commander",
+          originalCategory: "Low Ranks",
+          enlistedBy: "Recruiting Office Munich",
+          joinIn: "2023-03-10"
+        }
+      ];
+      
+      // Combine default data with stored data, avoiding duplicates
+      const combinedData = [...defaultRetired];
+      storedRetired.forEach(stored => {
+        if (!combinedData.find(existing => existing.username === stored.username)) {
+          combinedData.push(stored);
+        }
+      });
+      
+      // Sort by retirement date (newest first)
+      combinedData.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      setPersonnelData(combinedData);
+    };
+
+    loadRetiredPersonnel();
+
+    // Listen for storage changes to update in real-time
+    const handleStorageChange = () => {
+      loadRetiredPersonnel();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events from the same tab
+    window.addEventListener('retiredPersonnelUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('retiredPersonnelUpdated', handleStorageChange);
+    };
+  }, []);
 
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');

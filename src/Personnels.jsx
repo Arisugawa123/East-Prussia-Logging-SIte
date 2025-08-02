@@ -4,6 +4,15 @@ import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar } from 'react-icons/fa
 
 const Personnels = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showRetireModal, setShowRetireModal] = useState(false);
+  const [retireForm, setRetireForm] = useState({
+    soldierToRetire: '',
+    reason: '',
+    processedBy: '',
+    retireDate: new Date().toISOString().split('T')[0]
+  });
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [newPersonnel, setNewPersonnel] = useState({
     rank: 'Recruit',
     username: '',
@@ -215,6 +224,140 @@ const Personnels = () => {
     setShowModal(false);
   };
 
+  const handleRetireSoldier = () => {
+    if (!retireForm.soldierToRetire || !retireForm.reason || !retireForm.processedBy || !retireForm.retireDate) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    // Find and remove the soldier from appropriate data array
+    const soldierInfo = findSoldierByUsername(retireForm.soldierToRetire);
+    if (!soldierInfo) {
+      alert('Soldier not found');
+      return;
+    }
+
+    // Create retired personnel record
+    const retiredRecord = {
+      id: Date.now(), // Generate new ID for retired record
+      username: soldierInfo.username,
+      rank: soldierInfo.rank,
+      date: retireForm.retireDate,
+      reason: retireForm.reason,
+      processedBy: retireForm.processedBy,
+      originalCategory: getOriginalCategory(soldierInfo.category),
+      enlistedBy: soldierInfo.enlistedBy,
+      joinIn: soldierInfo.joinIn
+    };
+
+    // Store in localStorage for persistence across components
+    const existingRetired = JSON.parse(localStorage.getItem('retiredPersonnel') || '[]');
+    existingRetired.push(retiredRecord);
+    localStorage.setItem('retiredPersonnel', JSON.stringify(existingRetired));
+
+    // Trigger event to update RetiredPersonnel component in real-time
+    window.dispatchEvent(new Event('retiredPersonnelUpdated'));
+
+    // Remove soldier from the appropriate data array
+    switch(soldierInfo.category) {
+      case 'highCommand':
+        setHighCommandData(prev => prev.filter(person => person.id !== soldierInfo.id));
+        break;
+      case 'officer':
+        setOfficerData(prev => prev.filter(person => person.id !== soldierInfo.id));
+        break;
+      case 'nco':
+        setNcoData(prev => prev.filter(person => person.id !== soldierInfo.id));
+        break;
+      case 'lowRank':
+        setLowRankData(prev => prev.filter(person => person.id !== soldierInfo.id));
+        break;
+    }
+
+    // Reset form and close modal
+    setRetireForm({
+      soldierToRetire: '',
+      reason: '',
+      processedBy: '',
+      retireDate: new Date().toISOString().split('T')[0]
+    });
+    setShowRetireModal(false);
+    setSearchResults([]);
+    setShowSearchResults(false);
+    alert(`${soldierInfo.rank} ${soldierInfo.username} has been retired successfully and moved to Retired Personnel!`);
+  };
+
+  const getOriginalCategory = (category) => {
+    switch(category) {
+      case 'highCommand': return 'High Command';
+      case 'officer': return 'Officers';
+      case 'nco': return 'NCOs';
+      case 'lowRank': return 'Low Ranks';
+      default: return 'Unknown';
+    }
+  };
+
+  const findSoldierByUsername = (username) => {
+    // Search in all data arrays
+    let soldier = highCommandData.find(p => p.username.toLowerCase() === username.toLowerCase());
+    if (soldier) return { ...soldier, category: 'highCommand' };
+
+    soldier = officerData.find(p => p.username.toLowerCase() === username.toLowerCase());
+    if (soldier) return { ...soldier, category: 'officer' };
+
+    soldier = ncoData.find(p => p.username.toLowerCase() === username.toLowerCase());
+    if (soldier) return { ...soldier, category: 'nco' };
+
+    soldier = lowRankData.find(p => p.username.toLowerCase() === username.toLowerCase());
+    if (soldier) return { ...soldier, category: 'lowRank' };
+
+    return null;
+  };
+
+  const searchSoldiers = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const allSoldiers = [];
+    
+    // Collect all soldiers from all categories
+    [...highCommandData, ...officerData, ...ncoData, ...lowRankData].forEach(person => {
+      if (person.username.toLowerCase().includes(searchTerm.toLowerCase())) {
+        allSoldiers.push({
+          id: person.id,
+          rank: person.rank,
+          username: person.username,
+          category: getPersonCategory(person)
+        });
+      }
+    });
+
+    setSearchResults(allSoldiers);
+    setShowSearchResults(allSoldiers.length > 0);
+  };
+
+  const getPersonCategory = (person) => {
+    if (highCommandData.find(p => p.id === person.id)) return 'High Command';
+    if (officerData.find(p => p.id === person.id)) return 'Officers';
+    if (ncoData.find(p => p.id === person.id)) return 'NCOs';
+    if (lowRankData.find(p => p.id === person.id)) return 'Low Ranks';
+    return 'Unknown';
+  };
+
+  const handleSoldierSearch = (value) => {
+    setRetireForm(prev => ({ ...prev, soldierToRetire: value }));
+    searchSoldiers(value);
+  };
+
+  const selectSoldier = (soldier) => {
+    setRetireForm(prev => ({ ...prev, soldierToRetire: soldier.username }));
+    setSearchResults([]);
+    setShowSearchResults(false);
+  };
+
   const getRankOptions = (category) => {
     switch(category) {
       case 'lowRank':
@@ -325,10 +468,16 @@ const Personnels = () => {
             </div>
           </div>
           
-          <button className="add-personnel-btn" onClick={() => setShowModal(true)}>
-            <i className="fas fa-plus"></i>
-            Add Recruit
-          </button>
+          <div className="header-buttons">
+            <button className="add-personnel-btn" onClick={() => setShowModal(true)}>
+              <i className="fas fa-plus"></i>
+              Add Recruit
+            </button>
+            <button className="retire-personnel-btn" onClick={() => setShowRetireModal(true)}>
+              <i className="fas fa-user-minus"></i>
+              Retire Soldier
+            </button>
+          </div>
         </div>
         
         {/* Header Background Effects */}
@@ -427,6 +576,120 @@ const Personnels = () => {
               </button>
               <button className="btn-add" onClick={handleAddPersonnel}>
                 Add Recruit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Retire Soldier Modal */}
+      {showRetireModal && (
+        <div className="modal-overlay" onClick={() => setShowRetireModal(false)}>
+          <div className="retire-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-header-brand">
+                <div className="modal-logo-container">
+                  <div className="modal-logo-ring">
+                    <img src="./Civil_flag_of_Prussia_1701-1935.svg" alt="East Prussian Regiment" className="modal-brand-logo" />
+                  </div>
+                  <div className="modal-brand-text">
+                    <span className="modal-brand-title">Retire Soldier</span>
+                    <span className="modal-brand-subtitle">Ostpreußisches Landmilizbataillon</span>
+                  </div>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setShowRetireModal(false)}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="retire-form">
+                <div className="form-group search-group">
+                  <label>Soldier to Retire:</label>
+                  <div className="search-container">
+                    <input 
+                      type="text" 
+                      value={retireForm.soldierToRetire}
+                      onChange={(e) => handleSoldierSearch(e.target.value)}
+                      placeholder="Search soldier by username..."
+                      className="search-input"
+                    />
+                    <i className="fas fa-search search-icon"></i>
+                    
+                    {showSearchResults && (
+                      <div className="search-results">
+                        {searchResults.map(soldier => (
+                          <div 
+                            key={soldier.id} 
+                            className="search-result-item"
+                            onClick={() => selectSoldier(soldier)}
+                          >
+                            <div className="result-rank">{soldier.rank}</div>
+                            <div className="result-name">{soldier.username}</div>
+                            <div className="result-category">{soldier.category}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Retirement Reason:</label>
+                  <textarea 
+                    value={retireForm.reason}
+                    onChange={(e) => setRetireForm(prev => ({ ...prev, reason: e.target.value }))}
+                    placeholder="Enter reason for retirement (e.g., End of service, Medical discharge, etc.)"
+                    rows="3"
+                    className="retire-textarea"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Processed By:</label>
+                  <input 
+                    type="text" 
+                    value={retireForm.processedBy}
+                    onChange={(e) => setRetireForm(prev => ({ ...prev, processedBy: e.target.value }))}
+                    placeholder="Enter name of processing officer"
+                    className="retire-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Retirement Date:</label>
+                  <input 
+                    type="date" 
+                    value={retireForm.retireDate}
+                    onChange={(e) => setRetireForm(prev => ({ ...prev, retireDate: e.target.value }))}
+                    className="retire-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => {
+                setShowRetireModal(false);
+                setRetireForm({
+                  soldierToRetire: '',
+                  reason: '',
+                  processedBy: '',
+                  retireDate: new Date().toISOString().split('T')[0]
+                });
+                setSearchResults([]);
+                setShowSearchResults(false);
+              }}>
+                Cancel
+              </button>
+              <button 
+                className="btn-retire" 
+                onClick={handleRetireSoldier}
+                disabled={!retireForm.soldierToRetire || !retireForm.reason || !retireForm.processedBy || !retireForm.retireDate}
+              >
+                <i className="fas fa-user-minus"></i>
+                Process Retirement
               </button>
             </div>
           </div>
