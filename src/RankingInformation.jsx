@@ -112,11 +112,11 @@ function RankingInformation() {
                   <td>3 BTs & 3 CTs & 2 IPRs</td>
                 </tr>
                 <tr>
-                  <td className="rank-cell">Musketry → Gefreiter</td>
+                  <td className="rank-cell">Musketier → Gefreiter</td>
                   <td>2 BTs & 3 CTs & 1 IPR</td>
                 </tr>
                 <tr>
-                  <td className="rank-cell">Recruit → Musketry</td>
+                  <td className="rank-cell">Rekrut → Musketier</td>
                   <td>1 BT & 2 CTs</td>
                 </tr>
               </tbody>

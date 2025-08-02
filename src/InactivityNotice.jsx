@@ -1,94 +1,216 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './InactivityNotice.css';
-import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar } from 'react-icons/fa';
+import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar, FaSpinner, FaSync } from 'react-icons/fa';
+import { loggingService, personnelService, subscriptions, utils } from './lib/supabase';
 
 const InactivityNotice = () => {
   console.log("InactivityNotice component is rendering");
-  const [personnelData, setPersonnelData] = useState([
-    {
-      id: 1,
-      rank: "Hauptmann",
-      username: "Mueller_H",
-      reason: "Medical leave",
-      dateGone: "2024-01-15",
-      dateReturn: "2024-02-15"
-    },
-    {
-      id: 2,
-      rank: "Feldwebel",
-      username: "Schmidt_K",
-      reason: "Family emergency requiring extended absence for personal matters",
-      dateGone: "2024-01-20",
-      dateReturn: "2024-02-10"
-    },
-    {
-      id: 3,
-      rank: "Unteroffizier",
-      username: "Weber_F",
-      reason: "Military training course at external facility",
-      dateGone: "2024-01-10",
-      dateReturn: "2024-01-30"
-    },
-    {
-      id: 4,
-      rank: "Gefreiter",
-      username: "Fischer_M",
-      reason: "Vacation",
-      dateGone: "2024-01-25",
-      dateReturn: "2024-02-05"
-    },
-    {
-      id: 5,
-      rank: "Oberleutnant",
-      username: "Wagner_A",
-      reason: "Temporary assignment to headquarters for administrative duties and strategic planning",
-      dateGone: "2024-01-12",
-      dateReturn: "2024-02-20"
-    },
-    {
-      id: 6,
-      rank: "Stabsgefreiter",
-      username: "Becker_L",
-      reason: "Sick leave",
-      dateGone: "2024-01-18",
-      dateReturn: "2024-01-28"
-    },
-    {
-      id: 7,
-      rank: "Leutnant",
-      username: "Schulz_R",
-      reason: "Educational leave for advanced military studies and leadership development program",
-      dateGone: "2024-01-08",
-      dateReturn: "2024-03-01"
-    },
-    {
-      id: 8,
-      rank: "Hauptgefreiter",
-      username: "Hoffmann_T",
-      reason: "Personal leave",
-      dateGone: "2024-01-22",
-      dateReturn: "2024-02-12"
+  const [personnelData, setPersonnelData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load Inactivity Notice data from Supabase
+  useEffect(() => {
+    loadInactivityData();
+    
+    const personnelSubscription = subscriptions.subscribeToPersonnel(() => {
+      console.log('Personnel data changed, reloading Inactivity data...');
+      loadInactivityData();
+    });
+
+    const handlePromotionUpdate = () => {
+      console.log('Promotion detected, reloading Inactivity data...');
+      setTimeout(() => loadInactivityData(), 1000);
+    };
+
+    window.addEventListener('promotionLogsUpdated', handlePromotionUpdate);
+    
+    const handlePersonnelUpdate = () => {
+      console.log('Personnel update detected, reloading Inactivity data...');
+      setTimeout(() => loadInactivityData(), 500);
+    };
+    
+    window.addEventListener('personnelUpdated', handlePersonnelUpdate);
+
+    return () => {
+      personnelSubscription.unsubscribe();
+      window.removeEventListener('promotionLogsUpdated', handlePromotionUpdate);
+      window.removeEventListener('personnelUpdated', handlePersonnelUpdate);
+    };
+  }, []);
+
+  const loadInactivityData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const allPersonnel = await personnelService.getAllPersonnel();
+      const existingNotices = await loggingService.getInactivityNotices();
+      console.log('Raw inactivity notices from database:', existingNotices);
+      
+      const inactivityData = [];
+      const currentDate = new Date();
+      
+      for (const person of allPersonnel) {
+        let existingNotice = existingNotices.find(notice => notice.personnel_id === person.id);
+        
+        const lastSeenDate = person.date_joined ? new Date(person.date_joined) : new Date();
+        const daysInactive = Math.floor((currentDate - lastSeenDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysInactive > 7 || existingNotice) {
+          if (!existingNotice) {
+            const newNoticeData = {
+              personnel_id: person.id,
+              rank: person.rank,
+              username: person.username,
+              last_seen_date: lastSeenDate.toISOString().split('T')[0],
+              days_inactive: daysInactive,
+              notice_type: 'warning',
+              reason_for_absence: 'Extended absence without notice',
+              contact_attempts: 'Initial contact pending',
+              action_taken: 'Notice generated',
+              notice_date: currentDate.toISOString().split('T')[0],
+              status: 'None',
+              logged_by: 'System'
+            };
+            
+            existingNotice = await loggingService.addInactivityNotice(newNoticeData);
+          } else {
+            // Always update rank and username to reflect current personnel data
+            if (existingNotice.rank !== person.rank || existingNotice.username !== person.username) {
+              console.log(`Updating Inactivity notice: ${existingNotice.username} (${existingNotice.rank}) → ${person.username} (${person.rank})`);
+              await loggingService.updateInactivityNotice(existingNotice.id, {
+                rank: person.rank,
+                username: person.username,
+                last_activity_date: new Date().toISOString().split('T')[0]
+              });
+              existingNotice.rank = person.rank;
+              existingNotice.username = person.username;
+            }
+          }
+          
+          let status = existingNotice.status || 'None';
+          
+          inactivityData.push({
+            id: existingNotice.id,
+            rank: person.rank,
+            username: person.username,
+            reason: existingNotice.reason_for_absence || 'Unknown',
+            dateGone: existingNotice.last_seen_date || lastSeenDate.toISOString().split('T')[0],
+            dateReturn: existingNotice.action_taken || 'Pending',
+            status: status
+          });
+        }
+      }
+
+      setPersonnelData(inactivityData);
+
+    } catch (err) {
+      console.error('Error loading Inactivity data:', err);
+      setError(`Failed to load Inactivity data: ${err.message}. Please try again.`);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
 
   const handleCellClick = (personId, field) => {
     const person = personnelData.find(p => p.id === personId);
-    if (person && (field === 'reason' || field === 'dateGone' || field === 'dateReturn')) {
+    if (person && (field === 'reason' || field === 'dateGone' || field === 'dateReturn' || field === 'status')) {
       setEditingCell({ personId, field });
       setEditValue(person[field]);
     }
   };
 
-  const handleCellSave = () => {
+  const handleStatusSave = async (newStatusValue = null) => {
+    const statusValue = newStatusValue || editValue;
+    console.log('Inactivity handleStatusSave called', { 
+      editingCell, 
+      editValue, 
+      newStatusValue, 
+      statusValue,
+      newStatusValueType: typeof newStatusValue 
+    });
+    
+    if (editingCell && editingCell.field === 'status') {
+      const { personId } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+
+      if (person && person.status !== statusValue) {
+        try {
+          console.log('Updating Inactivity status in database...');
+          
+          await loggingService.updateInactivityNotice(personId, {
+            action_taken: `Status updated to: ${statusValue}`,
+            status: statusValue,
+            notice_date: new Date().toISOString().split('T')[0]
+          });
+
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, status: statusValue }
+              : p
+          ));
+
+          console.log(`✅ Successfully updated Inactivity status for personnel ${personId} to ${statusValue}`);
+          
+        } catch (error) {
+          console.error('❌ Error updating Inactivity status:', error);
+          alert('Failed to update status. Please try again.');
+          return;
+        }
+      } else {
+        console.log('No Inactivity status change needed or person not found');
+      }
+      
+      setEditingCell(null);
+      setEditValue('');
+    }
+  };
+
+  const handleCellSave = async () => {
     if (editingCell) {
-      setPersonnelData(prev => prev.map(person => 
-        person.id === editingCell.personId 
-          ? { ...person, [editingCell.field]: editValue }
-          : person
-      ));
+      // Handle status field separately
+      if (editingCell.field === 'status') {
+        return handleStatusSave();
+      }
+
+      const { personId, field } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+
+      if (person && person[field] !== editValue) {
+        try {
+          // Map UI fields to database fields
+          const dbFieldMap = {
+            reason: 'reason_for_absence',
+            dateGone: 'last_seen_date',
+            dateReturn: 'action_taken'
+          };
+
+          const dbField = dbFieldMap[field] || field;
+          
+          await loggingService.updateInactivityNotice(personId, {
+            [dbField]: editValue,
+            notice_date: new Date().toISOString().split('T')[0]
+          });
+
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, [field]: editValue }
+              : p
+          ));
+
+          console.log(`Updated ${field} for ${person.username} to ${editValue}`);
+          
+        } catch (error) {
+          console.error('Error updating Inactivity data:', error);
+          alert('Failed to save changes. Please try again.');
+          return;
+        }
+      }
+      
       setEditingCell(null);
       setEditValue('');
     }
@@ -108,6 +230,31 @@ const InactivityNotice = () => {
     if (reason.length > 50) return 'reason-text-medium';
     return 'reason-text-normal';
   };
+
+  if (loading) {
+    return (
+      <div className="inactivity-logging">
+        <div className="loading-container">
+          <FaSpinner className="loading-spinner" />
+          <p>Loading Inactivity Notice data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="inactivity-logging">
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button onClick={loadInactivityData} className="retry-button">
+            <FaSync />
+            Retry Loading
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="inactivity-logging">
@@ -143,10 +290,11 @@ const InactivityNotice = () => {
               <th>Reason</th>
               <th>Date Gone</th>
               <th>Date Return</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {personnelData.map((person) => (
+            {personnelData.length > 0 ? personnelData.map((person) => (
               <tr key={person.id}>
                 <td className="rank-cell">{person.rank}</td>
                 <td className="username-cell">{person.username}</td>
@@ -204,8 +352,50 @@ const InactivityNotice = () => {
                     person.dateReturn
                   )}
                 </td>
+                <td 
+                  className={`status-cell ${editingCell?.personId === person.id && editingCell?.field === 'status' ? 'editing' : ''}`}
+                  onClick={() => handleCellClick(person.id, 'status')}
+                >
+                  {editingCell?.personId === person.id && editingCell?.field === 'status' ? (
+                    <select 
+                      value={editValue}
+                      onChange={async (e) => {
+                        const newValue = e.target.value;
+                        console.log('Inactivity Status dropdown changed from:', editValue, 'to:', newValue);
+                        setEditValue(newValue);
+                        
+                        // Immediate save without timeout
+                        console.log('Immediately calling Inactivity handleStatusSave with value:', newValue);
+                        if (editingCell?.field === 'status') {
+                          await handleStatusSave(newValue);
+                        }
+                      }}
+                      onBlur={() => {
+                        if (editingCell?.field === 'status') {
+                          handleStatusSave(editValue);
+                        } else {
+                          handleCellSave();
+                        }
+                      }}
+                      autoFocus
+                      className="status-dropdown"
+                    >
+                      <option value="None">None</option>
+                      <option value="Needs Improvement">Needs Improvement</option>
+                      <option value="Ready For Promotion">Ready For Promotion</option>
+                    </select>
+                  ) : (
+                    person.status
+                  )}
+                </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan="5" style={{textAlign: 'center', fontStyle: 'italic', color: '#6c757d'}}>
+                  No inactivity notices found. Personnel with extended absences will appear here automatically.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

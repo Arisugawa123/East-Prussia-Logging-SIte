@@ -1,112 +1,222 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './OfficerLogging.css';
-import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar } from 'react-icons/fa';
+import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar, FaSpinner, FaSync } from 'react-icons/fa';
+import { loggingService, personnelService, subscriptions, utils } from './lib/supabase';
 
 const OfficerLogging = () => {
-  const [personnelData, setPersonnelData] = useState([
-    {
-      id: 1,
-      rank: "Leutnant",
-      username: "von_Weber_K",
-      hostedBT: 25,
-      hostedCT: 22,
-      hostedPR: 18,
-      recruitmentTraining: 15,
-      status: "Active"
-    },
-    {
-      id: 2,
-      rank: "Oberleutnant",
-      username: "von_Mueller_H",
-      hostedBT: 30,
-      hostedCT: 28,
-      hostedPR: 22,
-      recruitmentTraining: 19,
-      status: "Ready for Promotion"
-    },
-    {
-      id: 3,
-      rank: "Hauptmann",
-      username: "von_Schmidt_F",
-      hostedBT: 35,
-      hostedCT: 32,
-      hostedPR: 25,
-      recruitmentTraining: 20,
-      status: "Active"
-    },
-    {
-      id: 4,
-      rank: "Major",
-      username: "von_Fischer_M",
-      hostedBT: 45,
-      hostedCT: 42,
-      hostedPR: 35,
-      recruitmentTraining: 28,
-      status: "Ready for Promotion"
-    },
-    {
-      id: 5,
-      rank: "Oberstleutnant",
-      username: "von_Wagner_A",
-      hostedBT: 38,
-      hostedCT: 36,
-      hostedPR: 28,
-      recruitmentTraining: 22,
-      status: "Active"
-    },
-    {
-      id: 6,
-      rank: "Leutnant",
-      username: "von_Becker_L",
-      hostedBT: 18,
-      hostedCT: 15,
-      hostedPR: 12,
-      recruitmentTraining: 8,
-      status: "In Training"
-    },
-    {
-      id: 7,
-      rank: "Hauptmann",
-      username: "von_Schulz_R",
-      hostedBT: 32,
-      hostedCT: 29,
-      hostedPR: 24,
-      recruitmentTraining: 18,
-      status: "Active"
-    },
-    {
-      id: 8,
-      rank: "Oberst",
-      username: "von_Hoffmann_T",
-      hostedBT: 50,
-      hostedCT: 48,
-      hostedPR: 40,
-      recruitmentTraining: 35,
-      status: "Active"
-    }
-  ]);
-
+  const [personnelData, setPersonnelData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
 
-  const handleCellClick = (personId, field) => {
-    const person = personnelData.find(p => p.id === personId);
-    if (person && typeof person[field] === 'number') {
-      setEditingCell({ personId, field });
-      setEditValue(person[field].toString());
+  // Load Officer data from Supabase
+  useEffect(() => {
+    loadOfficerData();
+    
+    // Set up real-time subscriptions for both personnel and promotion changes
+    const personnelSubscription = subscriptions.subscribeToPersonnel(() => {
+      console.log('Personnel data changed, reloading Officer data...');
+      loadOfficerData();
+    });
+
+    // Listen for promotion events
+    const handlePromotionUpdate = () => {
+      console.log('Promotion detected, reloading Officer data...');
+      setTimeout(() => loadOfficerData(), 1000); // Add delay to ensure DB is updated
+    };
+
+    window.addEventListener('promotionLogsUpdated', handlePromotionUpdate);
+    
+    // Also listen for custom personnel update events
+    const handlePersonnelUpdate = () => {
+      console.log('Personnel update detected, reloading Officer data...');
+      setTimeout(() => loadOfficerData(), 500);
+    };
+    
+    window.addEventListener('personnelUpdated', handlePersonnelUpdate);
+
+    return () => {
+      personnelSubscription.unsubscribe();
+      window.removeEventListener('promotionLogsUpdated', handlePromotionUpdate);
+      window.removeEventListener('personnelUpdated', handlePersonnelUpdate);
+    };
+  }, []);
+
+  const loadOfficerData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const allPersonnel = await personnelService.getAllPersonnel();
+      const officerPersonnel = allPersonnel.filter(person => 
+        ['Sekondeleutnant', 'Premierleutnant', 'Hauptmann'].includes(person.rank)
+      );
+
+      const existingLogs = await loggingService.getOfficerLogs();
+      const officerData = [];
+      
+      for (const person of officerPersonnel) {
+        let existingLog = existingLogs.find(log => log.personnel_id === person.id);
+        
+        if (!existingLog) {
+          const newLogData = {
+            personnel_id: person.id,
+            rank: person.rank,
+            username: person.username,
+            command_assignments: JSON.stringify({
+              hostedBT: 0, hostedCT: 0, hostedPR: 0, recruitmentTraining: 0
+            }),
+            strategic_planning: 'New Officer - Developing strategic skills',
+            officer_training: 'Basic officer training completed',
+            leadership_assessment: 'Assessment pending',
+            mission_reports: 'No missions assigned yet',
+            last_activity_date: new Date().toISOString().split('T')[0],
+            logged_by: 'System'
+          };
+          existingLog = await loggingService.addOfficerLog(newLogData);
+        } else {
+          // Update existing log with current rank from personnel table
+          if (existingLog.rank !== person.rank) {
+            console.log(`Updating Officer log rank from ${existingLog.rank} to ${person.rank} for ${person.username}`);
+            await loggingService.updateOfficerLog(existingLog.id, {
+              rank: person.rank,
+              username: person.username
+            });
+            existingLog.rank = person.rank;
+            existingLog.username = person.username;
+          }
+        }
+        
+        let trainingScores = { hostedBT: 0, hostedCT: 0, hostedPR: 0, recruitmentTraining: 0 };
+        try {
+          if (existingLog.command_assignments) {
+            trainingScores = JSON.parse(existingLog.command_assignments);
+          }
+        } catch (e) {
+          console.warn('Failed to parse Officer training scores for', person.username);
+        }
+        
+        let status = existingLog.status || 'None';
+        
+        officerData.push({
+          id: existingLog.id,
+          rank: person.rank, // Use current rank from personnel table, not cached log
+          username: person.username, // Use current username from personnel table
+          hostedBT: trainingScores.hostedBT || 0,
+          hostedCT: trainingScores.hostedCT || 0,
+          hostedPR: trainingScores.hostedPR || 0,
+          recruitmentTraining: trainingScores.recruitmentTraining || 0,
+          status: status
+        });
+      }
+
+      setPersonnelData(officerData.sort((a, b) => utils.getRankOrder(a.rank) - utils.getRankOrder(b.rank)));
+
+    } catch (err) {
+      console.error('Error loading Officer data:', err);
+      setError(`Failed to load Officer data: ${err.message}. Please try again.`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCellSave = () => {
-    if (editingCell) {
-      const newValue = parseInt(editValue);
-      if (!isNaN(newValue) && newValue >= 0) {
-        setPersonnelData(prev => prev.map(person => 
-          person.id === editingCell.personId 
-            ? { ...person, [editingCell.field]: newValue }
-            : person
-        ));
+  const handleCellClick = (personId, field) => {
+    const person = personnelData.find(p => p.id === personId);
+    if (person && (typeof person[field] === 'number' || field === 'status')) {
+      setEditingCell({ personId, field });
+      setEditValue(field === 'status' ? person[field] : person[field].toString());
+    }
+  };
+
+  const handleStatusSave = async (newStatusValue = null) => {
+    const statusValue = newStatusValue || editValue;
+    console.log('Officer handleStatusSave called', { 
+      editingCell, 
+      editValue, 
+      newStatusValue, 
+      statusValue,
+      newStatusValueType: typeof newStatusValue 
+    });
+    
+    if (editingCell && editingCell.field === 'status') {
+      const { personId } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+
+      if (person && person.status !== statusValue) {
+        try {
+          console.log('Updating Officer status in database...');
+          
+          await loggingService.updateOfficerLog(personId, {
+            leadership_assessment: `Status updated to: ${statusValue}`,
+            status: statusValue, // Save status directly
+            last_activity_date: new Date().toISOString().split('T')[0]
+          });
+
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, status: statusValue }
+              : p
+          ));
+
+          console.log(`✅ Successfully updated Officer status for personnel ${personId} to ${statusValue}`);
+          
+        } catch (error) {
+          console.error('❌ Error updating Officer status:', error);
+          alert('Failed to update status. Please try again.');
+          return;
+        }
+      } else {
+        console.log('No Officer status change needed or person not found');
       }
+      
+      setEditingCell(null);
+      setEditValue('');
+    }
+  };
+
+  const handleCellSave = async () => {
+    if (editingCell) {
+      // Handle status field separately
+      if (editingCell.field === 'status') {
+        return handleStatusSave();
+      }
+
+      const { personId, field } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+      const newValue = parseInt(editValue);
+
+      if (!isNaN(newValue) && newValue >= 0 && person) {
+        try {
+          const updatedScores = {
+            hostedBT: person.hostedBT,
+            hostedCT: person.hostedCT,
+            hostedPR: person.hostedPR,
+            recruitmentTraining: person.recruitmentTraining,
+            [field]: newValue
+          };
+
+          await loggingService.updateOfficerLog(personId, {
+            command_assignments: JSON.stringify(updatedScores),
+            leadership_assessment: `Training progress updated. Status: ${person.status}`,
+            last_activity_date: new Date().toISOString().split('T')[0]
+          });
+
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, [field]: newValue }
+              : p
+          ));
+
+          console.log(`Updated ${field} for ${person.username} to ${newValue}`);
+          
+        } catch (error) {
+          console.error('Error updating Officer training data:', error);
+          alert('Failed to save changes. Please try again.');
+          return;
+        }
+      }
+      
       setEditingCell(null);
       setEditValue('');
     }
@@ -120,6 +230,31 @@ const OfficerLogging = () => {
       setEditValue('');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="officer-logging">
+        <div className="loading-container">
+          <FaSpinner className="loading-spinner" />
+          <p>Loading Officer data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="officer-logging">
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button onClick={loadOfficerData} className="retry-button">
+            <FaSync />
+            Retry Loading
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="officer-logging">
@@ -160,7 +295,7 @@ const OfficerLogging = () => {
             </tr>
           </thead>
           <tbody>
-            {personnelData.map((person) => (
+            {personnelData.length > 0 ? personnelData.map((person) => (
               <tr key={person.id}>
                 <td className="rank-cell">{person.rank}</td>
                 <td className="username-cell">{person.username}</td>
@@ -240,11 +375,44 @@ const OfficerLogging = () => {
                     person.recruitmentTraining
                   )}
                 </td>
-                <td className="status-cell">
-                  {person.status}
+                <td 
+                  className={`status-cell ${editingCell?.personId === person.id && editingCell?.field === 'status' ? 'editing' : ''}`}
+                  onClick={() => handleCellClick(person.id, 'status')}
+                >
+                  {editingCell?.personId === person.id && editingCell?.field === 'status' ? (
+                    <select 
+                      value={editValue}
+                      onChange={async (e) => {
+                        const newValue = e.target.value;
+                        console.log('Officer Status dropdown changed from:', editValue, 'to:', newValue);
+                        setEditValue(newValue);
+                        
+                        // Immediate save without timeout
+                        console.log('Immediately calling Officer handleStatusSave with value:', newValue);
+                        if (editingCell?.field === 'status') {
+                          await handleStatusSave(newValue);
+                        }
+                      }}
+                      onBlur={handleCellSave}
+                      autoFocus
+                      className="status-dropdown"
+                    >
+                      <option value="None">None</option>
+                      <option value="Needs Improvement">Needs Improvement</option>
+                      <option value="Ready For Promotion">Ready For Promotion</option>
+                    </select>
+                  ) : (
+                    person.status
+                  )}
                 </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan="7" style={{textAlign: 'center', fontStyle: 'italic', color: '#6c757d'}}>
+                  No Officer personnel found for training tracking.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

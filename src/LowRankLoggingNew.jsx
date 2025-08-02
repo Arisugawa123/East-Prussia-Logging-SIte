@@ -1,112 +1,280 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LowRankLoggingNew.css';
-import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar } from 'react-icons/fa';
+import { FaClipboardList, FaMouse, FaKeyboard, FaChartBar, FaSpinner, FaSync } from 'react-icons/fa';
+import { loggingService, personnelService, subscriptions, utils } from './lib/supabase';
 
 const LowRankLoggingNew = () => {
-  const [personnelData, setPersonnelData] = useState([
-    {
-      id: 1,
-      rank: "Schütze",
-      username: "Weber_J",
-      basicTraining: 15,
-      combatTraining: 12,
-      internalPracticalRaid: 8,
-      practiceRaid: 5,
-      status: "Active"
-    },
-    {
-      id: 2,
-      rank: "Gefreiter",
-      username: "Klein_M",
-      basicTraining: 20,
-      combatTraining: 18,
-      internalPracticalRaid: 12,
-      practiceRaid: 9,
-      status: "Ready for NCO"
-    },
-    {
-      id: 3,
-      rank: "Obergefreiter",
-      username: "Richter_S",
-      basicTraining: 14,
-      combatTraining: 10,
-      internalPracticalRaid: 6,
-      practiceRaid: 3,
-      status: "In Training"
-    },
-    {
-      id: 4,
-      rank: "Hauptgefreiter",
-      username: "Neumann_T",
-      basicTraining: 25,
-      combatTraining: 22,
-      internalPracticalRaid: 15,
-      practiceRaid: 12,
-      status: "Ready for NCO"
-    },
-    {
-      id: 5,
-      rank: "Stabsgefreiter",
-      username: "Braun_L",
-      basicTraining: 18,
-      combatTraining: 16,
-      internalPracticalRaid: 10,
-      practiceRaid: 7,
-      status: "Active"
-    },
-    {
-      id: 6,
-      rank: "Schütze",
-      username: "Zimmermann_K",
-      basicTraining: 8,
-      combatTraining: 5,
-      internalPracticalRaid: 2,
-      practiceRaid: 1,
-      status: "Needs Improvement"
-    },
-    {
-      id: 7,
-      rank: "Gefreiter",
-      username: "Krüger_R",
-      basicTraining: 16,
-      combatTraining: 13,
-      internalPracticalRaid: 9,
-      practiceRaid: 6,
-      status: "Active"
-    },
-    {
-      id: 8,
-      rank: "Obergefreiter",
-      username: "Lehmann_A",
-      basicTraining: 17,
-      combatTraining: 14,
-      internalPracticalRaid: 11,
-      practiceRaid: 8,
-      status: "Active"
-    }
-  ]);
-
+  const [personnelData, setPersonnelData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
 
-  const handleCellClick = (personId, field) => {
-    const person = personnelData.find(p => p.id === personId);
-    if (person && typeof person[field] === 'number') {
-      setEditingCell({ personId, field });
-      setEditValue(person[field].toString());
+  // Load low rank training data from Supabase
+  useEffect(() => {
+    loadLowRankData();
+    
+    // Set up real-time subscriptions for both personnel and promotion changes
+    const personnelSubscription = subscriptions.subscribeToPersonnel(() => {
+      console.log('Personnel data changed, reloading Low Rank data...');
+      loadLowRankData();
+    });
+
+    // Listen for promotion events
+    const handlePromotionUpdate = () => {
+      console.log('Promotion detected, reloading Low Rank data...');
+      setTimeout(() => loadLowRankData(), 1000); // Add delay to ensure DB is updated
+    };
+
+    window.addEventListener('promotionLogsUpdated', handlePromotionUpdate);
+    
+    // Also listen for custom personnel update events
+    const handlePersonnelUpdate = () => {
+      console.log('Personnel update detected, reloading Low Rank data...');
+      setTimeout(() => loadLowRankData(), 500);
+    };
+    
+    window.addEventListener('personnelUpdated', handlePersonnelUpdate);
+
+    return () => {
+      personnelSubscription.unsubscribe();
+      window.removeEventListener('promotionLogsUpdated', handlePromotionUpdate);
+      window.removeEventListener('personnelUpdated', handlePersonnelUpdate);
+    };
+  }, []);
+
+  const loadLowRankData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get low rank personnel and their training logs
+      const allPersonnel = await personnelService.getAllPersonnel();
+      const lowRankPersonnel = allPersonnel.filter(person => 
+        ['Rekrut', 'Musketier', 'Gefreiter', 'Frei Korporal'].includes(person.rank)
+      );
+
+      // Get existing logs
+      const existingLogs = await loggingService.getLowRankLogs();
+      console.log('Raw logs from database:', existingLogs);
+      console.log('Logs with status:', existingLogs.filter(log => log.status && log.status !== 'None'));
+      
+      // Create training data for personnel
+      const trainingData = [];
+      
+      for (const person of lowRankPersonnel) {
+        let existingLog = existingLogs.find(log => log.personnel_id === person.id);
+        
+        if (!existingLog) {
+          // Create new training log entry for this person
+          const newLogData = {
+            personnel_id: person.id,
+            rank: person.rank,
+            username: person.username,
+            training_completed: JSON.stringify({
+              basicTraining: 0,
+              combatTraining: 0,
+              internalPracticalRaid: 0,
+              practiceRaid: 0
+            }),
+            performance_notes: 'New recruit - Training in progress',
+            disciplinary_actions: 'None',
+            last_activity_date: new Date().toISOString().split('T')[0],
+            logged_by: 'System'
+          };
+          
+          existingLog = await loggingService.addLowRankLog(newLogData);
+        } else {
+          // Update existing log with current rank from personnel table
+          if (existingLog.rank !== person.rank) {
+            console.log(`Updating Low Rank log rank from ${existingLog.rank} to ${person.rank} for ${person.username}`);
+            await loggingService.updateLowRankLog(existingLog.id, {
+              rank: person.rank,
+              username: person.username
+            });
+            existingLog.rank = person.rank;
+            existingLog.username = person.username;
+          }
+        }
+        
+        // Parse training scores from JSON or set defaults
+        let trainingScores = { basicTraining: 0, combatTraining: 0, internalPracticalRaid: 0, practiceRaid: 0 };
+        try {
+          if (existingLog.training_completed) {
+            trainingScores = JSON.parse(existingLog.training_completed);
+          }
+        } catch (e) {
+          console.warn('Failed to parse training scores for', person.username);
+        }
+        
+        // Get status from database or set default
+        let status = existingLog.status || 'None';
+        console.log(`Loading status for ${person.username}:`, {
+          logId: existingLog.id,
+          personnelId: person.id,
+          statusFromDB: existingLog.status,
+          finalStatus: status,
+          fullLogData: existingLog
+        });
+        
+        trainingData.push({
+          id: existingLog.id,
+          rank: person.rank, // Use current rank from personnel table, not cached log
+          username: person.username, // Use current username from personnel table
+          basicTraining: trainingScores.basicTraining || 0,
+          combatTraining: trainingScores.combatTraining || 0,
+          internalPracticalRaid: trainingScores.internalPracticalRaid || 0,
+          practiceRaid: trainingScores.practiceRaid || 0,
+          status: status
+        });
+      }
+
+      setPersonnelData(trainingData.sort((a, b) => utils.getRankOrder(a.rank) - utils.getRankOrder(b.rank)));
+
+    } catch (err) {
+      console.error('Error loading low rank training data:', err);
+      console.error('Full error details:', err.message, err.details, err.hint);
+      setError(`Failed to load training data: ${err.message}. Please try again.`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCellSave = () => {
-    if (editingCell) {
-      const newValue = parseInt(editValue);
-      if (!isNaN(newValue) && newValue >= 0) {
-        setPersonnelData(prev => prev.map(person => 
-          person.id === editingCell.personId 
-            ? { ...person, [editingCell.field]: newValue }
-            : person
-        ));
+  const handleCellClick = (personId, field) => {
+    const person = personnelData.find(p => p.id === personId);
+    if (person && (typeof person[field] === 'number' || field === 'status')) {
+      setEditingCell({ personId, field });
+      setEditValue(field === 'status' ? person[field] : person[field].toString());
+    }
+  };
+
+  const handleStatusSave = async (newStatusValue = null) => {
+    const statusValue = newStatusValue || editValue;
+    console.log('handleStatusSave called', { 
+      editingCell, 
+      editValue, 
+      newStatusValue, 
+      statusValue,
+      newStatusValueType: typeof newStatusValue 
+    });
+    
+    if (editingCell && editingCell.field === 'status') {
+      const { personId } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+
+      console.log('Status save attempt:', { personId, currentStatus: person?.status, newStatus: statusValue });
+
+      console.log('Comparison check:', { 
+        personExists: !!person, 
+        currentStatus: person?.status, 
+        newStatus: statusValue, 
+        areEqual: person?.status === statusValue 
+      });
+
+      if (person && person.status !== statusValue) {
+        try {
+          console.log('Updating status in database...');
+          
+          // Update in database - save status in a dedicated field
+          console.log('About to update database with:', {
+            personId,
+            statusValue,
+            updateData: {
+              performance_notes: `Status updated to: ${statusValue}`,
+              status: statusValue,
+              last_activity_date: new Date().toISOString().split('T')[0]
+            }
+          });
+          
+          const updateResult = await loggingService.updateLowRankLog(personId, {
+            performance_notes: `Status updated to: ${statusValue}`,
+            status: statusValue, // Save status directly
+            last_activity_date: new Date().toISOString().split('T')[0]
+          });
+          
+          console.log('Database update result:', updateResult);
+          console.log('Database result status field:', updateResult?.status);
+          
+          // Verify the update worked by checking the returned status
+          if (updateResult?.status !== statusValue) {
+            console.error('❌ Database update failed! Expected status:', statusValue, 'but got:', updateResult?.status);
+            alert(`Database update failed! Status should be "${statusValue}" but database returned "${updateResult?.status}"`);
+            return;
+          }
+
+          // Update local state
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, status: statusValue }
+              : p
+          ));
+
+          console.log(`✅ Successfully updated status for personnel ${personId} to ${statusValue}`);
+          
+        } catch (error) {
+          console.error('❌ Error updating status:', error);
+          alert('Failed to update status. Please try again.');
+          return;
+        }
+      } else {
+        console.log('No status change needed or person not found');
       }
+      
+      setEditingCell(null);
+      setEditValue('');
+    } else {
+      console.log('Not a status edit or editingCell is null');
+    }
+  };
+
+  const handleCellSave = async () => {
+    if (editingCell) {
+      // Handle status field separately
+      if (editingCell.field === 'status') {
+        return handleStatusSave();
+      }
+
+      const { personId, field } = editingCell;
+      const person = personnelData.find(p => p.id === personId);
+      const newValue = parseInt(editValue);
+
+      if (!isNaN(newValue) && newValue >= 0 && person) {
+        try {
+          // Update training scores in database
+          const updatedScores = {
+            basicTraining: person.basicTraining,
+            combatTraining: person.combatTraining,
+            internalPracticalRaid: person.internalPracticalRaid,
+            practiceRaid: person.practiceRaid,
+            [field]: newValue
+          };
+
+          // Keep existing status when updating training scores
+          const currentStatus = person.status;
+
+          // Update in database
+          await loggingService.updateLowRankLog(personId, {
+            training_completed: JSON.stringify(updatedScores),
+            performance_notes: `Training progress updated. Status: ${currentStatus}`,
+            last_activity_date: new Date().toISOString().split('T')[0]
+          });
+
+          // Update local state
+          setPersonnelData(prev => prev.map(p => 
+            p.id === personId 
+              ? { ...p, [field]: newValue }
+              : p
+          ));
+
+          console.log(`Updated ${field} for ${person.username} to ${newValue}`);
+          
+        } catch (error) {
+          console.error('Error updating training data:', error);
+          alert('Failed to save changes. Please try again.');
+          return; // Don't clear editing state on error
+        }
+      }
+      
       setEditingCell(null);
       setEditValue('');
     }
@@ -120,6 +288,31 @@ const LowRankLoggingNew = () => {
       setEditValue('');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="lowrank-logging">
+        <div className="loading-container">
+          <FaSpinner className="loading-spinner" />
+          <p>Loading low rank training data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="lowrank-logging">
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button onClick={loadLowRankData} className="retry-button">
+            <FaSync />
+            Retry Loading
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lowrank-logging">
@@ -160,7 +353,7 @@ const LowRankLoggingNew = () => {
             </tr>
           </thead>
           <tbody>
-            {personnelData.map((person) => (
+            {personnelData.length > 0 ? personnelData.map((person) => (
               <tr key={person.id}>
                 <td className="rank-cell">{person.rank}</td>
                 <td className="username-cell">{person.username}</td>
@@ -240,11 +433,44 @@ const LowRankLoggingNew = () => {
                     person.practiceRaid
                   )}
                 </td>
-                <td className="status-cell">
-                  {person.status}
+                <td 
+                  className={`status-cell ${editingCell?.personId === person.id && editingCell?.field === 'status' ? 'editing' : ''}`}
+                  onClick={() => handleCellClick(person.id, 'status')}
+                >
+                  {editingCell?.personId === person.id && editingCell?.field === 'status' ? (
+                    <select 
+                      value={editValue}
+                      onChange={async (e) => {
+                        const newValue = e.target.value;
+                        console.log('Status dropdown changed from:', editValue, 'to:', newValue);
+                        setEditValue(newValue);
+                        
+                        // Immediate save without timeout
+                        console.log('Immediately calling handleStatusSave with value:', newValue);
+                        if (editingCell?.field === 'status') {
+                          await handleStatusSave(newValue);
+                        }
+                      }}
+                      onBlur={handleCellSave}
+                      autoFocus
+                      className="status-dropdown"
+                    >
+                      <option value="None">None</option>
+                      <option value="Needs Improvement">Needs Improvement</option>
+                      <option value="Ready For Promotion">Ready For Promotion</option>
+                    </select>
+                  ) : (
+                    person.status
+                  )}
                 </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan="7" style={{textAlign: 'center', fontStyle: 'italic', color: '#6c757d'}}>
+                  No low rank personnel found for training tracking.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

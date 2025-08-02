@@ -1,11 +1,69 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Dashboard from './Dashboard'
+import { createClient } from '@supabase/supabase-js'
+
+// Google OAuth configuration
+const GOOGLE_CLIENT_ID = '372631332637-9h00k2e1qf5rklkh298s5j6avf0itnhn.apps.googleusercontent.com'
+
+// Supabase configuration
+const supabaseUrl = 'https://duqpkttgmldgteeuuwbd.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1cXBrdHRnbWxkZ3RlZXV3dWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMjkyODQsImV4cCI6MjA2OTcwNTI4NH0.KnJ88n8GDXdydNzzTqR-2RXqxBILfpdlea7JFdSqIbg'
+
+// Create Supabase client
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkSession = () => {
+      try {
+        const sessionData = localStorage.getItem('prussianStaffSession')
+        if (sessionData) {
+          const session = JSON.parse(sessionData)
+          const now = new Date().getTime()
+          
+          // Check if session is still valid (24 hours)
+          if (session.expires && now < session.expires) {
+            setShowDashboard(true)
+          } else {
+            // Session expired, remove it
+            localStorage.removeItem('prussianStaffSession')
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error)
+        localStorage.removeItem('prussianStaffSession')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkSession()
+  }, [])
+
+  // Function to create session
+  const createSession = (authMethod = 'access_code', userInfo = null) => {
+    const sessionData = {
+      loginTime: new Date().getTime(),
+      expires: new Date().getTime() + (24 * 60 * 60 * 1000), // 24 hours
+      accessLevel: 'staff',
+      authMethod: authMethod,
+      userInfo: userInfo
+    }
+    localStorage.setItem('prussianStaffSession', JSON.stringify(sessionData))
+  }
+
+  // Function to clear session
+  const clearSession = () => {
+    localStorage.removeItem('prussianStaffSession')
+  }
 
   const handleLoginSubmit = (e) => {
     e.preventDefault()
@@ -18,6 +76,7 @@ function App() {
     
     // Simulate login process
     if (accessCode.toUpperCase() === 'KONIGSBERG') {
+      createSession() // Create persistent session
       setIsLoginModalOpen(false)
       setShowDashboard(true)
       alert('Login successful! Welcome to the command center.')
@@ -28,9 +87,285 @@ function App() {
     e.target.reset()
   }
 
+  // Google Sign-In handler
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    
+    try {
+      // Check if Google Identity Services is loaded
+      if (!window.google) {
+        console.error('Google Identity Services not loaded')
+        alert('Google services are loading. Please wait a moment and try again.')
+        setIsGoogleLoading(false)
+        return
+      }
+
+      console.log('Google services available, initializing...')
+
+      // Try the popup flow directly (more reliable)
+      if (window.google.accounts.oauth2) {
+        console.log('Using OAuth2 popup flow')
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: handleGoogleTokenCallback,
+          error_callback: (error) => {
+            console.error('OAuth2 error:', error)
+            setIsGoogleLoading(false)
+            alert('Google Sign-In failed. Please check your internet connection and try again.')
+          }
+        })
+        
+        tokenClient.requestAccessToken({
+          prompt: 'consent'
+        })
+      } else {
+        // Fallback to ID token flow
+        console.log('Using ID token flow')
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+          auto_select: false,
+          cancel_on_tap_outside: false
+        })
+
+        // Try to render a button and click it programmatically
+        const buttonDiv = document.createElement('div')
+        buttonDiv.style.display = 'none'
+        document.body.appendChild(buttonDiv)
+
+        window.google.accounts.id.renderButton(buttonDiv, {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard'
+        })
+
+        // Trigger the sign-in
+        window.google.accounts.id.prompt((notification) => {
+          console.log('Prompt notification:', notification)
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            // Clean up
+            document.body.removeChild(buttonDiv)
+            setIsGoogleLoading(false)
+            alert('Google Sign-In popup was blocked or cancelled. Please allow popups and try again.')
+          }
+        })
+      }
+
+    } catch (error) {
+      console.error('Google Sign-In error:', error)
+      setIsGoogleLoading(false)
+      alert('Google Sign-In failed. Please try the access code method or refresh the page.')
+    }
+  }
+
+  // Handle Google OAuth callback
+  const handleGoogleCallback = async (response) => {
+    try {
+      console.log('🔍 Processing Google authentication...');
+      
+      // Decode JWT token to get user info
+      const userInfo = JSON.parse(atob(response.credential.split('.')[1]))
+      console.log('👤 User email:', userInfo.email);
+      
+      // Check if user is authorized using Supabase
+      const userRank = await isAuthorizedUser(userInfo.email)
+      
+      if (userRank) {
+        console.log('✅ User authorized with rank:', userRank);
+        
+        createSession('google_oauth', {
+          name: userInfo.name,
+          email: userInfo.email,
+          picture: userInfo.picture,
+          rank: userRank,
+          accessLevel: userRank
+        })
+        
+        setIsLoginModalOpen(false)
+        setShowDashboard(true)
+        alert(`Welcome ${userInfo.name}! Authenticated as ${userRank}.`)
+      } else {
+        console.log('❌ User not authorized:', userInfo.email);
+        alert('Access denied. Your Google account is not authorized for staff access.')
+      }
+    } catch (error) {
+      console.error('❌ Google callback error:', error)
+      alert('Authentication failed. Please try again.')
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
+  // Handle Google token callback (fallback method)
+  const handleGoogleTokenCallback = async (response) => {
+    try {
+      if (response.access_token) {
+        // Fetch user info using the access token
+        const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: {
+            Authorization: `Bearer ${response.access_token}`
+          }
+        })
+        
+        const userInfo = await userResponse.json()
+        
+        const userRank = isAuthorizedUser(userInfo.email)
+        if (userRank) {
+          createSession('google_oauth', {
+            ...userInfo,
+            rank: userRank,
+            accessLevel: userRank
+          })
+          setIsLoginModalOpen(false)
+          setShowDashboard(true)
+          alert(`Welcome ${userInfo.name}! Authenticated as ${userRank}.`)
+        } else {
+          alert('Access denied. Your Google account is not authorized for staff access.')
+        }
+      }
+    } catch (error) {
+      console.error('Token callback error:', error)
+      alert('Authentication failed. Please try again.')
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
+  // Check if user is authorized using Supabase
+  const isAuthorizedUser = async (email) => {
+    try {
+      console.log('🔍 Checking authorization for:', email);
+      
+      const { data, error } = await supabase
+        .from('authorized_users')
+        .select('email, rank, status')
+        .eq('email', email.toLowerCase())
+        .eq('status', 'Active')
+        .single();
+
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        
+        // Fallback for your email if database fails
+        if (email.toLowerCase() === 'ironwolftrojanmotionscape@gmail.com') {
+          console.log('✅ Using fallback authorization for owner');
+          return 'HICOM';
+        }
+        return null;
+      }
+
+      if (data) {
+        console.log('✅ User authorized:', data);
+        
+        // Update last login
+        await supabase
+          .from('authorized_users')
+          .update({ last_login: new Date().toISOString() })
+          .eq('email', email.toLowerCase());
+          
+        return data.rank;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('❌ Authorization check failed:', error);
+      
+      // Fallback for your email
+      if (email.toLowerCase() === 'ironwolftrojanmotionscape@gmail.com') {
+        console.log('✅ Using emergency fallback for owner');
+        return 'HICOM';
+      }
+      return null;
+    }
+  }
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const loadGoogleScript = () => {
+      // Check if script is already loaded
+      if (window.google) {
+        console.log('Google Identity Services already loaded')
+        return
+      }
+
+      // Check if script tag already exists
+      const existingScript = document.querySelector('script[src*="gsi/client"]')
+      if (existingScript) {
+        console.log('Google script tag already exists')
+        return
+      }
+
+      console.log('Loading Google Identity Services...')
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      
+      script.onload = () => {
+        console.log('Google Identity Services loaded successfully')
+      }
+      
+      script.onerror = () => {
+        console.error('Failed to load Google Identity Services')
+      }
+      
+      document.head.appendChild(script)
+    }
+
+    loadGoogleScript()
+
+    // Cleanup function
+    return () => {
+      // Don't remove the script as it might be needed elsewhere
+      // Just log that component is unmounting
+      console.log('Google OAuth component unmounting')
+    }
+  }, [])
+
+  // Handle logout
+  const handleLogout = () => {
+    clearSession()
+    setShowDashboard(false)
+  }
+
+  // Show loading screen while checking session
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%)',
+        color: '#ffd700',
+        fontFamily: 'Cinzel, serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '3px solid #ffd700',
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p>Loading Prussian Command Center...</p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    )
+  }
+
   // Show dashboard if logged in
   if (showDashboard) {
-    return <Dashboard onClose={() => setShowDashboard(false)} />
+    return <Dashboard onClose={handleLogout} />
   }
 
   return (
@@ -1503,9 +1838,7 @@ function App() {
                   </div>
                 </div>
               </div>
-              <button className="modal-close" onClick={() => setIsLoginModalOpen(false)}>
-                <i className="fas fa-times"></i>
-              </button>
+              <span className="close" onClick={() => setIsLoginModalOpen(false)}>&times;</span>
             </div>
             
             <div className="modal-body">
@@ -1517,27 +1850,75 @@ function App() {
                 This portal is reserved for authorized military personnel only.</p>
               </div>
               
-              <form className="staff-login-form" onSubmit={handleLoginSubmit}>
-                <div className="form-group">
-                  <label htmlFor="accessCode">
-                    <i className="fas fa-key"></i>
-                    Military Access Code:
-                  </label>
-                  <div className="input-container">
-                    <input type="password" id="accessCode" name="accessCode" placeholder="Enter your access code" required />
+              <div className="auth-container">
+                {/* High Rank Authentication - Google Only */}
+                <div className="auth-section high-rank-auth">
+                  <div className="auth-header">
+                    <div className="rank-badge high-rank">
+                      <i className="fas fa-star"></i>
+                      <span>HICOM / OFFICER / NCO</span>
+                    </div>
+                    <p>High Command and Officers must authenticate via Google</p>
                   </div>
+                  
+                  <button 
+                    type="button" 
+                    className="google-signin-btn primary"
+                    onClick={handleGoogleSignIn}
+                    disabled={isGoogleLoading}
+                  >
+                    {isGoogleLoading ? (
+                      <>
+                        <div className="loading-spinner"></div>
+                        Authenticating...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fab fa-google"></i>
+                        {window.google ? 'Google Authentication' : 'Loading Google...'}
+                      </>
+                    )}
+                  </button>
                 </div>
-                
-                <div className="security-notice">
+
+                <div className="auth-divider">
+                  <span>OR</span>
+                </div>
+
+                {/* Low Rank Authentication - Access Code */}
+                <div className="auth-section low-rank-auth">
+                  <div className="auth-header">
+                    <div className="rank-badge low-rank">
+                      <i className="fas fa-user"></i>
+                      <span>LOW RANK PERSONNEL</span>
+                    </div>
+                    <p>Enlisted personnel access via code</p>
+                  </div>
+                  
+                  <form className="compact-form" onSubmit={handleLoginSubmit}>
+                    <div className="input-group">
+                      <input 
+                        type="password" 
+                        id="accessCode" 
+                        name="accessCode" 
+                        placeholder="Low Rank Access Code" 
+                        required 
+                      />
+                      <i className="fas fa-key input-icon"></i>
+                    </div>
+                    
+                    <button type="submit" className="btn access-code-btn">
+                      <i className="fas fa-sign-in-alt"></i>
+                      Access Dashboard
+                    </button>
+                  </form>
+                </div>
+
+                <div className="security-footer">
                   <i className="fas fa-shield-alt"></i>
-                  <span>All access attempts are logged and monitored</span>
+                  <span>All access attempts are monitored</span>
                 </div>
-                
-                <button type="submit" className="btn staff-login-btn">
-                  <i className="fas fa-sign-in-alt"></i>
-                  Login
-                </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>

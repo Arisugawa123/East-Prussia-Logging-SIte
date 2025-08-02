@@ -94,8 +94,8 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Musketry",
-      username: "MusketryUser1",
+      rank: "Musketier",
+      username: "MusketierUser1",
       basicTraining: 2,
       combatTraining: 3,
       internalRaid: 1,
@@ -103,8 +103,8 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Musketry",
-      username: "MusketryUser2",
+      rank: "Musketier",
+      username: "MusketierUser2",
       basicTraining: 3,
       combatTraining: 2,
       internalRaid: 1,
@@ -112,8 +112,8 @@ const LowRankLogging = () => {
       status: "Inactivity Notice"
     },
     {
-      rank: "Musketry",
-      username: "MusketryUser3",
+      rank: "Musketier",
+      username: "MusketierUser3",
       basicTraining: 1,
       combatTraining: 4,
       internalRaid: 2,
@@ -121,8 +121,8 @@ const LowRankLogging = () => {
       status: "Ready for NCOA"
     },
     {
-      rank: "Musketry",
-      username: "MusketryUser4",
+      rank: "Musketier",
+      username: "MusketierUser4",
       basicTraining: 2,
       combatTraining: 3,
       internalRaid: 1,
@@ -130,8 +130,8 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Musketry",
-      username: "MusketryUser5",
+      rank: "Musketier",
+      username: "MusketierUser5",
       basicTraining: 4,
       combatTraining: 3,
       internalRaid: 2,
@@ -139,7 +139,7 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Rekruit",
+      rank: "Rekrut",
       username: "RecruitUser1",
       basicTraining: 1,
       combatTraining: 2,
@@ -148,7 +148,7 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Rekruit",
+      rank: "Rekrut",
       username: "RecruitUser2",
       basicTraining: 0,
       combatTraining: 1,
@@ -157,7 +157,7 @@ const LowRankLogging = () => {
       status: "Inactivity Notice"
     },
     {
-      rank: "Rekruit",
+      rank: "Rekrut",
       username: "RecruitUser3",
       basicTraining: 2,
       combatTraining: 2,
@@ -166,7 +166,7 @@ const LowRankLogging = () => {
       status: "Ready for Promotion"
     },
     {
-      rank: "Rekruit",
+      rank: "Rekrut",
       username: "RecruitUser4",
       basicTraining: 1,
       combatTraining: 1,
@@ -175,7 +175,7 @@ const LowRankLogging = () => {
       status: "Inactivity Notice"
     },
     {
-      rank: "Rekruit",
+      rank: "Rekrut",
       username: "RecruitUser5",
       basicTraining: 0,
       combatTraining: 3,
